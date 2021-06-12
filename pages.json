@@ -1,0 +1,132 @@
+{
+	"easycom": {
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+	},
+	"pages": [{
+		"path": "pages/index/index",
+		"style": {
+			"navigationBarTitleText": "可得快传",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/history/history",
+		"style": {
+			"navigationBarTitleText": "历史",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/storage/storage",
+		"style": {
+			"navigationBarTitleText": "云盘",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/my/my",
+		"style": {
+			"navigationBarTitleText": "个人",
+			"navigationBarTextStyle": "black",
+			"navigationBarBackgroundColor": "#f5f0f0",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/aboutus/aboutus",
+		"style": {
+			"navigationBarTitleText": "关于我们",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/login/login",
+		"style": {
+			"navigationBarTitleText": "登录",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/register/register",
+		"style": {
+			"navigationBarTitleText": "注册",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/findPassword/findPassword",
+		"style": {
+			"navigationBarTitleText": "找回密码",
+			"enablePullDownRefresh": false
+		}
+
+	}    ,{
+            "path" : "pages/help/help",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "帮助",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/language/language",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "语言",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/feelback/feelback",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "意见反馈",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/account/account",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "个人信息",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "可得快传",
+		"navigationBarBackgroundColor": "#de0a0a",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#cdcdcd",
+		"selectedColor": "#d81e06",
+		"borderStyle": "black",
+		"backgroundColor": "#f5f0f0",
+		"list": [{
+			"pagePath": "pages/index/index",
+			"iconPath": "static/tabber/index.png",
+			"selectedIconPath": "static/tabber/index-act.png",
+			"text": "首页"
+		}, {
+			"pagePath": "pages/history/history",
+			"iconPath": "static/tabber/history.png",
+			"selectedIconPath": "static/tabber/history-act.png",
+			"text": "历史"
+		}, {
+			"pagePath": "pages/storage/storage",
+			"iconPath": "static/tabber/storage.png",
+			"selectedIconPath": "static/tabber/storage-act.png",
+			"text": "云盘"
+		}, {
+			"pagePath": "pages/my/my",
+			"iconPath": "static/tabber/my.png",
+			"selectedIconPath": "static/tabber/my-act.png",
+			"text": "个人"
+		}]
+	}
+}
