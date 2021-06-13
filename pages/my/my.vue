@@ -3,7 +3,7 @@
 
 		<view class="c-top">
 			<view class="c-header" @tap="gotoAccount()">
-				<image class="c-image" src="../../static/logo-black.png" mode=""></image>
+				<image class="c-image" src="../../static/logo.png" mode=""></image>
 			</view>
 			<text class="c-nickname">EATMANS</text>
 		</view>
@@ -12,7 +12,7 @@
 		<!-- 模态窗 -->
 		<u-modal v-model="show" :title-style="{color: 'red'}" :mask-close-able="true">
 			<view class="c-slot-content">
-				<image class="c-mask-iamge" src="../../static/logo-black.png"></image>
+				<image class="c-mask-iamge" src="../../static/logo.png"></image>
 				<text>暂时不开放升级功能</text>
 			</view>
 		</u-modal>
@@ -43,7 +43,7 @@
 
 		<view class="c-upgrade-pro" @tap="upgradeToPro()">
 			<view class="c-left">
-				<u-icon class="c-icon" name="star-fill" size="50" color="#de0a0a"></u-icon>
+				<u-icon class="c-icon" name="star-fill" size="50" color="#f7aa00"></u-icon>
 			</view>
 			<view class="c-righte">
 				<text>立即更新</text>
@@ -179,7 +179,7 @@
 		border: 2px solid transparent;
 		border-radius: 30rpx;
 		background-color: transparent;
-		border-color: #d40a0a;
+		border-color: #f7aa00;
 		padding: 10rpx;
 
 	}

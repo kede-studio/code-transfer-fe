@@ -2,7 +2,7 @@
 	<view class="c-box">
 		<!-- 顶部操作栏 -->
 		<view class="c-top-bar">
-			<image class="c-logo" src="../../static/cowtransfer.png" mode=""></image>
+			<image class="c-logo" src="../../static/logo.png" mode=""></image>
 			<view class="c-text" v-for="(item,index) in tools" @click="switchTabs(index)" :key="index">
 				<text :class="tabIndex == index ?'c-act' :''">{{item}}</text>
 			</view>
@@ -10,7 +10,6 @@
 
 		<!-- 背景图片 -->
 		<image class="c-image" src="../../static/bg1.jpg"></image>
-
 
 		<!-- 添加文件面板 -->
 		<u-popup v-model="showAdd" mode="bottom" border-radius="14" length="80%">
@@ -59,7 +58,6 @@
 			</view>
 		</u-popup>
 
-
 		<!-- 接收面板 -->
 		<u-popup v-model="showAccept" mode="bottom" border-radius="14" length="50%">
 			<view class="c-accept">
@@ -68,16 +66,41 @@
 				<text class="c-accept-text">输入取件码</text>
 				<u-message-input @change="change" @finish="finish" :maxlength="6"></u-message-input>
 			</view>
-
 		</u-popup>
-		
+
+		<!-- 发送成功 -->
+		<u-popup v-model="sendOK" mode="bottom" border-radius="14" length="60%">
+			<view class="c-accept">
+				<view class="c-grip">
+				</view>
+				<image class="c-success" src="../../static/suceess.png" mode=""></image>
+				<text>链接过期时间：2021-6-13 20:37:51</text>
+				<view class="c-url">
+					hhhhhhhhhhhhhhh
+				</view>
+				<button class="c-button-copy">复制链接</button>
+				<button class="c-button-share">分享</button>
+
+				<view class="c-copy-area">
+					<text class="c-pickupcode-text">点击复制6位取件码</text>
+					<view class=" ">
+						<view class="c-number" v-for="(item, index) in pickupCode" :key="index">
+							{{item}}
+						</view>
+					</view>
+
+				</view>
+
+			</view>
+		</u-popup>
+
 		<!-- 模态窗 -->
-		<u-modal v-model="showInputModal"  :mask-close-able="true">
+		<u-modal v-model="showInputModal" :mask-close-able="true">
 			<view class="c-slot-content">
-				<input class="c-input" type="text" value="" v-model="desc" placeholder="输入你想要的描述"/>
+				<input class="c-input" type="text" value="" v-model="desc" placeholder="输入你想要的描述" />
 			</view>
 		</u-modal>
-		
+
 		<!-- 上传文件方式 -->
 		<u-action-sheet :list="list" @click="click" v-model="show"></u-action-sheet>
 		<!-- 下面的按键 -->
@@ -94,6 +117,11 @@
 </template>
 
 <script>
+	import {
+		mapState,
+		mapMutations,
+		mapActions
+	} from 'vuex'
 	export default {
 		data() {
 			return {
@@ -104,21 +132,32 @@
 					text: '从对话框中选择视频'
 				}, {
 					text: '从对话框中选择图片'
+				}, {
+					text: '从相册或相机中选择图片'
 				}],
 				tabIndex: 0, // 
 				show: false, // 操作上传文件的类型
 				showInputModal: false, // 展示modal窗
-				desc:"",
+				desc: "",
 				showAdd: false, // 展示添加抽屉
 				showAccept: false, // 展示接收抽屉
+				sendOK: false,
 				checked: false, // 是否已经接受协议
-				tempFiles: [] // 临时文件列表
+				tempFiles: [], // 临时文件列表
+				tempFilePaths: [],
+				pickupCode: "121231"
+
 			}
+		},
+		computed: {
+			...mapState(['hasLogin', 'isUniverifyLogin', 'univerifyErrorMsg'])
 		},
 		onLoad() {
 
 		},
 		methods: {
+			...mapMutations(['login', 'setUniverifyLogin', "logout"]),
+			...mapActions(['getPhoneNumber']),
 
 			showInput() {
 				this.showInputModal = true
@@ -164,10 +203,9 @@
 						title: '还没有添加文件哦！'
 					});
 				} else {
-					uni.showToast({
-						icon: "none",
-						title: '捞仔的接口还没有写好，上传个鬼咯'
-					});
+					console.log(this.tempFiles)
+					this.uploadImg();
+					console.log("调用成功")
 				}
 
 				// 
@@ -180,7 +218,7 @@
 					wx.chooseMessageFile({
 						type: "file",
 						success: res => {
-							const tempFilePaths = res.tempFilePaths;
+							this.tempFilePaths = res.tempFilePaths;
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
 							// console.log("res.tempFiles", res.tempFiles)
 							// console.log("this.tempFiles", this.tempFiles)
@@ -197,8 +235,7 @@
 					wx.chooseMessageFile({
 						type: "video",
 						success: res => {
-							this.tempFiles = res.tempFiles;
-							this.tempFiles = this.tempFiles.push(res.tempFiles);
+							this.tempFiles = this.tempFiles.concat(res.tempFiles);
 							// console.log("res.tempFiles", res.tempFiles)
 							// console.log("this.tempFiles", this.tempFiles)
 							// console.log("选择了", res.tempFiles);
@@ -214,7 +251,6 @@
 					wx.chooseMessageFile({
 						type: "image",
 						success: res => {
-							this.tempFiles = res.tempFiles;
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
 							// console.log("res.tempFiles", res.tempFiles)
 							// console.log("this.tempFiles", this.tempFiles)
@@ -225,7 +261,42 @@
 						}
 					})
 				}
-				console.log(`点击了第${index + 1}项，内容为：${this.list[index].text}`)
+
+				if (index == 3) {
+					var that = this;
+					wx.chooseImage({
+						success: res => {
+							that.tempFilePaths = res.tempFilePaths;
+							console.log("tempFilePaths", that.tempFilePaths)
+							wx.uploadFile({
+								url: 'http://192.168.123.105:9999/upload',
+								filePath: that.tempFilePaths[0],
+								name: 'file',
+								formData: {
+									'user': 'eatmans'
+								},
+								success: res => {
+									console.log(res.data)
+									uni.showToast({
+										icon: "success",
+										title: '文件上传成功！'
+									});
+									that.showAdd = false;
+									that.sendOK = true;
+								},
+								fail: err => {
+									uni.showToast({
+										icon: "success",
+										title: '文件上传成功！'
+									});
+									that.showAdd = false;
+									console.log("图片上传失败", err)
+								}
+							})
+						}
+					})
+				}
+				// console.log(`点击了第${index + 1}项，内容为：${this.list[index].text}`)
 			},
 
 			// 监控用户输入的接收码
@@ -240,7 +311,7 @@
 						icon: "none",
 						title: '你获得了一坨屎！'
 					});
-				}else{
+				} else {
 					uni.showToast({
 						icon: "none",
 						title: '等待后端的接口'
@@ -479,12 +550,62 @@
 		color: #C8C7CC;
 
 	}
-	
-	.c-input{
+
+	.c-input {
 		margin: 25rpx;
 		padding: 10rpx;
 		height: 40rpx;
 		border-radius: 10rpx;
 		background-color: #E6E6E6;
+	}
+
+	.c-success {
+		width: 350rpx;
+		height: 250rpx;
+	}
+
+	.c-url {
+		margin: 10rpx;
+		padding: 20rpx;
+		background-color: #F5F0F0;
+		border-radius: 10rpx;
+
+	}
+
+	.c-button-copy {
+		width: 80%;
+		border-radius: 25rpx;
+		background-color: #000048;
+		color: #FFFFFF;
+		font-size: 30rpx;
+		margin: 10rpx;
+	}
+
+	.c-copy-area {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 20rpx;
+	}
+
+	.c-button-share {
+		width: 80%;
+		border-radius: 25rpx;
+		font-size: 30rpx;
+		background-color: #f7aa00;
+		margin: 10rpx;
+	}
+
+	.c-pickupcode-text {
+		color: #888888;
+	}
+
+	.c-number {
+		display: inline-block;
+		margin: 5rpx;
+		background-color: #ffae00;
+		border-radius: 25rpx;
+		padding: 20rpx;
 	}
 </style>

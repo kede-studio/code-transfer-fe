@@ -3,7 +3,7 @@
 		<view class="c-area">
 			<view class="c-title">头像</view>
 			<view class="c-desc">稍后我们会支持更新头像</view>
-			<image class="c-avatar" src="../../static/logo-black.png"></image>
+			<image class="c-avatar" src="../../static/logo.png"></image>
 			<u-gap height="2" bg-color="#ebebeb"></u-gap>
 		</view>
 
@@ -27,7 +27,7 @@
 		<view class="c-area">
 			<view class="c-title">PRO 账号设置</view>
 			<view class="c-bind-title">设置个性域名</view>
-			<input class="c-input" type="text" value="etamans.codetramsfer.com" />
+			<input class="c-input" type="text" value="eatmans.codetramsfer.com" />
 			<view class="c-desc">定制属于你的专属传输工具，首先从个性化的定制域名开始,设置成功后暂不支持二次修改</view>
 			<button class="c-button">立即升级</button>
 			<u-gap height="2" bg-color="#ebebeb"></u-gap>

@@ -1,6 +1,6 @@
 <template>
 	<view class="u-flex u-flex-col">
-		<image class="logo" src="../../static/logo-black.png"></image>
+		<image class="logo" src="../../static/logo.png"></image>
 		<u-toast ref="uToast" />
 		<u-form :model="form" ref="uForm" class="c-container">
 			<u-form-item prop="phoneNumber">

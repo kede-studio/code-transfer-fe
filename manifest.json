@@ -1,5 +1,5 @@
 {
-    "name" : "CodeTransferFE",
+    "name" : "可得快传",
     "appid" : "__UNI__2B40CA8",
     "description" : "",
     "versionName" : "1.0.0",
@@ -52,7 +52,8 @@
     "mp-weixin" : {
         "appid" : "wx98bd4a935aea8f5e",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "es6" : true
         },
         "usingComponents" : true
     },

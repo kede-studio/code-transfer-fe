@@ -7,7 +7,7 @@
 		<!-- 模态窗 -->
 		<u-modal v-model="show" :title-style="{color: 'red'}" :mask-close-able="true">
 			<view class="c-slot-content">
-				<image class="c-mask-iamge" src="../../static/logo-black.png"></image>
+				<image class="c-mask-iamge" src="../../static/logo.png"></image>
 				<text>暂时不开放升级功能</text>
 			</view>
 		</u-modal>
