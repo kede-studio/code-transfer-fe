@@ -3,7 +3,7 @@
 		<!-- 顶部操作栏 -->
 		<view class="c-top-bar">
 			<image class="c-logo" src="../../static/logo.png" mode=""></image>
-			<view class="c-text" v-for="(item,index) in tools" @click="switchTabs(index)" :key="index">
+			<view class="c-text" v-for="(item,index) in tools" @tap="switchTabs(index)" :key="index">
 				<text :class="tabIndex == index ?'c-act' :''">{{item}}</text>
 			</view>
 		</view>
@@ -18,7 +18,7 @@
 				</view>
 				<view class="c-upload-top">
 					<text class="c-title">添加文件</text>
-					<u-icon @click="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon>
+					<u-icon @tap="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon>
 				</view>
 
 				<view class="c-upload-content">
@@ -27,7 +27,7 @@
 						<text class="c-list-item-filename">{{item.name}}</text>
 						<text class="c-list-item-filesize">{{renderSize(item.size)}}</text>
 						<u-icon class="c-list-item-del" name="trash-fill" color="#cbcbcb" size="50"
-							@click="deleteFile(tempFiles,item.name)"></u-icon>
+							@tap="deleteFile(tempFiles,item.name)"></u-icon>
 					</view>
 					<view class="c-nocontent" v-if="tempFiles.length == 0">
 						<image class="c-nofile" src="../../static/nofile.png"></image>
@@ -74,21 +74,20 @@
 				<view class="c-grip">
 				</view>
 				<image class="c-success" src="../../static/suceess.png" mode=""></image>
-				<text>链接过期时间：2021-6-13 20:37:51</text>
+				<!-- 				<text>链接过期时间：2021-6-13 20:37:51</text>
 				<view class="c-url">
-					hhhhhhhhhhhhhhh
-				</view>
-				<button class="c-button-copy">复制链接</button>
-				<button class="c-button-share">分享</button>
+					{{shareUrl}}
+				</view> -->
+				<!-- 				<button class="c-button-copy">复制链接</button>
+				<button class="c-button-share">分享</button> -->
 
-				<view class="c-copy-area">
+				<view class="c-copy-area" @tap="copyPickupCode()">
 					<text class="c-pickupcode-text">点击复制6位取件码</text>
 					<view class=" ">
 						<view class="c-number" v-for="(item, index) in pickupCode" :key="index">
 							{{item}}
 						</view>
 					</view>
-
 				</view>
 
 			</view>
@@ -101,14 +100,39 @@
 			</view>
 		</u-modal>
 
+		<!-- 下载模态窗 -->
+		<u-popup v-model="showDownloadModal" mode="bottom" border-radius="14" length="80%">
+			<view class="c-accept">
+				<view class="c-grip">
+				</view>
+				<view class="c-upload-top">
+					<text class="c-title">下载</text>
+					<!-- <u-icon @tap="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon> -->
+				</view>
+
+				<!-- <view class="c-list-item" v-for="item in downloadFileList" :key="item.id"> -->
+				<view class="c-list-item">
+					<u-icon class="c-list-item-filetype" name="file-text" color="#b4b4b4" size="50"></u-icon>
+					<text class="c-list-item-filename">{{downloadFileList.filename}}</text>
+					<text class="c-list-item-filesize">{{renderSize(downloadFileList.fileSize)}}</text>
+					<u-icon class="c-list-item-del" name="download" color="#cbcbcb" size="50"
+						@tap="deleteFile(tempFiles,item.filename)"></u-icon>
+				</view>
+
+				<view class="c-download-bottom">
+					<button class="c-download-button" @tap="downloadAllFile">下载全部</button>
+				</view>
+			</view>
+		</u-popup>
+
 		<!-- 上传文件方式 -->
-		<u-action-sheet :list="list" @click="click" v-model="show"></u-action-sheet>
+		<u-action-sheet :list="list" @click="chooseButton" v-model="show"></u-action-sheet>
 		<!-- 下面的按键 -->
-		<view v-if="tabIndex == 0" class="c-button" @click="showAdd = true">
+		<view v-if="tabIndex == 0" class="c-button" @tap="showAdd = true">
 			<u-icon class="c-plus" name="plus" color="#cd0a0a" size="45"></u-icon>
 			<text class="c-add">添加文件</text>
 		</view>
-		<view v-else class="c-button" @click="showAccept = true">
+		<view v-else class="c-button" @tap="showAccept = true">
 			<u-icon class="c-plus" name="arrow-downward" color="#cd0a0a" size="45"></u-icon>
 			<text class="c-add">下载</text>
 		</view>
@@ -143,10 +167,12 @@
 				showAccept: false, // 展示接收抽屉
 				sendOK: false,
 				checked: false, // 是否已经接受协议
+				showDownloadModal: false, // 下载页面的dowmloadModal
 				tempFiles: [], // 临时文件列表
 				tempFilePaths: [],
-				pickupCode: "121231"
-
+				pickupCode: "121231",
+				shareUrl: "http://tf.rjxh.cloud/sh34ffs",
+				downloadFileList: []
 			}
 		},
 		computed: {
@@ -158,7 +184,11 @@
 		methods: {
 			...mapMutations(['login', 'setUniverifyLogin', "logout"]),
 			...mapActions(['getPhoneNumber']),
-
+			Toast(data, duration = 1000) {
+				uni.showToast(Object.assign({}, data, {
+					duration
+				}))
+			},
 			showInput() {
 				this.showInputModal = true
 			},
@@ -183,11 +213,11 @@
 				this.tabIndex = index;
 				// console.log(index)
 			},
+
 			// 删除文件
 			deleteFile(fileList, name) {
 				this.tempFiles = fileList.filter(item => item.name != name);
 			},
-
 
 			// 上传文件
 			uploadFile() {
@@ -203,22 +233,49 @@
 						title: '还没有添加文件哦！'
 					});
 				} else {
-					console.log(this.tempFiles)
-					this.uploadImg();
+					console.log("文件列表内容：", this.tempFiles)
+					this.uploadFileImpl();
 					console.log("调用成功")
 				}
 
 				// 
 			},
 
+			// 获取收件码的信息
+			getPickupCodeInfo(code) {
+				uni.request({
+					url: 'http://192.168.123.105:9999/file/download',
+					method: 'GET',
+					data: {
+						"pickupCode": code
+					},
+					success: res => {
+						console.log("通过pickupcode从服务端获取的数据", res);
+
+						if (res.data.code == 200) {
+							uni.showToast({
+								title: '有效的收件码'
+							});
+							this.downloadFileList = res.data.data;
+							this.showDownloadModal = true;
+						} else {
+							uni.showToast({
+								icon: "none",
+								title: '该收件码已失效'
+							});
+						}
+					},
+					fail: () => {},
+					complete: () => {}
+				});
+			},
 			// 点击获取文件方式
-			click(index) {
+			chooseButton(index) {
 				// 获取文件
 				if (index == 0) {
 					wx.chooseMessageFile({
 						type: "file",
 						success: res => {
-							this.tempFilePaths = res.tempFilePaths;
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
 							// console.log("res.tempFiles", res.tempFiles)
 							// console.log("this.tempFiles", this.tempFiles)
@@ -232,6 +289,7 @@
 
 				// 获取视频
 				if (index == 1) {
+					var that = this;
 					wx.chooseMessageFile({
 						type: "video",
 						success: res => {
@@ -261,35 +319,38 @@
 						}
 					})
 				}
-
+				// 从相册或相机中选
 				if (index == 3) {
-					var that = this;
 					wx.chooseImage({
 						success: res => {
-							that.tempFilePaths = res.tempFilePaths;
-							console.log("tempFilePaths", that.tempFilePaths)
+							console.log(res)
+							this.tempFiles = this.tempFiles.concat(res.tempFiles);
+							this.tempFilePaths = res.tempFilePaths;
+							console.log("tempFilePaths", this.tempFilePaths)
 							wx.uploadFile({
 								url: 'http://192.168.123.105:9999/upload',
-								filePath: that.tempFilePaths[0],
+								filePath: this.tempFilePaths[0],
 								name: 'file',
 								formData: {
-									'user': 'eatmans'
+									'username': 'eatmans'
 								},
 								success: res => {
-									console.log(res.data)
+									console.log("突突突突突突拖", this.tempFiles[0].path)
+									console.log(res.data.code)
 									uni.showToast({
 										icon: "success",
 										title: '文件上传成功！'
 									});
-									that.showAdd = false;
-									that.sendOK = true;
+									this.showAdd = false;
+									this.sendOK = true;
+									this.tempFiles = [];
 								},
 								fail: err => {
-									uni.showToast({
-										icon: "success",
-										title: '文件上传成功！'
+									this.Toast({
+										icon: "none",
+										title: '上传失败'
 									});
-									that.showAdd = false;
+									this.showAdd = false;
 									console.log("图片上传失败", err)
 								}
 							})
@@ -299,6 +360,80 @@
 				// console.log(`点击了第${index + 1}项，内容为：${this.list[index].text}`)
 			},
 
+			// 单文件上传
+			uploadFileImpl() {
+				console.log("this.tempFiles[0]", this.tempFiles[0])
+				wx.uploadFile({
+					url: 'http://192.168.123.105:9999/upload',
+					filePath: this.tempFiles[0].path,
+					name: 'file',
+					formData: {
+						'username': 'eatmans',
+						"filename": this.tempFiles[0].name,
+						"fileType": this.tempFiles[0].type,
+						"fileSize": this.tempFiles[0].size,
+						"description": this.desc
+					},
+					success: res => {
+						// 获取服务器发来的内容
+						var result = JSON.parse(res.data);
+						console.log("获得的数据", result.data)
+						this.pickupCode = result.data;
+						uni.showToast({
+							icon: "success",
+							title: '上传成功！'
+						});
+						this.showAdd = false;
+						this.sendOK = true;
+						this.tempFiles = [];
+					},
+					fail: err => {
+						this.Toast({
+							icon: "none",
+							title: '上传失败'
+						});
+						this.showAdd = false;
+						console.log("上传失败", err)
+					}
+				})
+			},
+			// 设置粘贴板数据
+			copyPickupCode() {
+				uni.setClipboardData({
+					data: this.pickupCode,
+					success: function() {
+						console.log('success');
+					}
+				});
+			},
+			// 根据index来下载
+			downloadFile(index){
+				
+			},
+			
+			// 直接下载全部文件
+			downloadAllFile(){
+				wx.downloadFile({
+				  url: 'http://192.168.123.105:9999/file/get', //仅为示例，并非真实的资源
+				  success (res) {
+				    // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+				    // if (res.statusCode === 200) {
+				    //   wx.playVoice({
+				    //     filePath: res.tempFilePath
+				    //   })
+				    // }
+				  }
+				})
+			},
+
+			// 获取粘贴数据
+			getPickupCode() {
+				uni.getClipboardData({
+					success: function(res) {
+						console.log("粘贴板数据", res.data);
+					}
+				});
+			},
 			// 监控用户输入的接收码
 			change(e) {
 				console.log('内容改变，当前值为：' + e);
@@ -306,16 +441,13 @@
 			// 
 			finish(e) {
 				console.log('输入结束，当前值为：' + e);
-				if (e == 123456) {
+				if (e == 990215) {
 					uni.showToast({
 						icon: "none",
-						title: '你获得了一坨屎！'
+						title: '晓坚的生日哦'
 					});
 				} else {
-					uni.showToast({
-						icon: "none",
-						title: '等待后端的接口'
-					});
+					this.getPickupCodeInfo(e);
 				}
 			}
 
@@ -463,6 +595,15 @@
 		background-color: #f0f0f0;
 		border-radius: 45rpx 45rpx 0 0;
 	}
+	
+	.c-download-bottom {
+		position: absolute;
+		bottom: 0rpx;
+		height: 300rpx;
+		width: 100%;
+		background-color: #f0f0f0;
+		border-radius: 45rpx 45rpx 0 0;
+	}
 
 	.c-upload-button {
 		margin-top: 50rpx;
@@ -482,6 +623,16 @@
 		border-radius: 45rpx;
 		color: #FFFFFF;
 		background-color: #888;
+	}
+	
+	.c-download-button{
+		margin-top: 50rpx;
+		width: 580rpx;
+		font-size: 30rpx;
+		padding: 5rpx;
+		border-radius: 45rpx;
+		color: #FFFFFF;
+		background-color: #cd0a0a;
 	}
 
 	.c-option {
