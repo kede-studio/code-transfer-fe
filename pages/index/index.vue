@@ -1,5 +1,6 @@
 <template>
 	<view class="c-box">
+
 		<!-- 顶部操作栏 -->
 		<view class="c-top-bar">
 			<image class="c-logo" src="../../static/logo.png" mode=""></image>
@@ -9,12 +10,12 @@
 		</view>
 
 		<!-- 背景图片 -->
-		<image class="c-image" src="../../static/bg1.jpg"></image>
+		<image class="c-image" src="../../static/bg.jpg"></image>
 
 		<!-- 添加文件面板 -->
 		<u-popup v-model="showAdd" mode="bottom" border-radius="14" length="80%">
 			<view class="c-upload-box">
-				<view class="c-grip-add">
+				<view class="c-grip">
 				</view>
 				<view class="c-upload-top">
 					<text class="c-title">添加文件</text>
@@ -116,11 +117,14 @@
 					<text class="c-list-item-filename">{{downloadFileList.filename}}</text>
 					<text class="c-list-item-filesize">{{renderSize(downloadFileList.fileSize)}}</text>
 					<u-icon class="c-list-item-del" name="download" color="#cbcbcb" size="50"
-						@tap="deleteFile(tempFiles,item.filename)"></u-icon>
+						@tap="downloadFile(downloadFileList)"></u-icon>
 				</view>
 
 				<view class="c-download-bottom">
-					<button class="c-download-button" @tap="downloadAllFile">下载全部</button>
+					<button class="c-download-button" @tap="downloadAllFile(downloadFileList)">下载全部</button>
+					<view class="c-tips-area">
+						文件将通过转发到聊天框中保存
+					</view>
 				</view>
 			</view>
 		</u-popup>
@@ -144,7 +148,8 @@
 	import {
 		mapState,
 		mapMutations,
-		mapActions
+		mapActions,
+		mapGetters
 	} from 'vuex'
 	export default {
 		data() {
@@ -170,20 +175,26 @@
 				showDownloadModal: false, // 下载页面的dowmloadModal
 				tempFiles: [], // 临时文件列表
 				tempFilePaths: [],
-				pickupCode: "121231",
+				pickupCode: "000000",
+				userInfo: "",
+				username: "",
 				shareUrl: "http://tf.rjxh.cloud/sh34ffs",
-				downloadFileList: []
+				downloadFileList: [], //根据pickupcode获取到文件列表
+				logined: false
 			}
 		},
 		computed: {
-			...mapState(['hasLogin', 'isUniverifyLogin', 'univerifyErrorMsg'])
+			...mapState(['hasLogin']),
+			...mapGetters(["userInfoGet", "userToken"])
 		},
 		onLoad() {
-
+			// this.init()
+		},
+		onShow() {
+			this.init()
 		},
 		methods: {
-			...mapMutations(['login', 'setUniverifyLogin', "logout"]),
-			...mapActions(['getPhoneNumber']),
+			...mapMutations(['login', "logout"]),
 			Toast(data, duration = 1000) {
 				uni.showToast(Object.assign({}, data, {
 					duration
@@ -191,6 +202,7 @@
 			},
 			showInput() {
 				this.showInputModal = true
+				this.getPickupCode();
 			},
 
 			//  格式化文件大小
@@ -219,6 +231,18 @@
 				this.tempFiles = fileList.filter(item => item.name != name);
 			},
 
+			init() {
+				uni.getStorage({
+					key: 'userInfo',
+					success: res => {
+						this.userInfo = res.data;
+						this.logined = true;
+						this.username = res.data.username;
+						console.log(res.data);
+					}
+				});
+			},
+
 			// 上传文件
 			uploadFile() {
 				// 判断是否勾选同意协议
@@ -232,42 +256,42 @@
 						icon: "none",
 						title: '还没有添加文件哦！'
 					});
+				} else if (!this.logined) {
+					uni.showToast({
+						icon: "none",
+						title: '请先登录！'
+					});
 				} else {
 					console.log("文件列表内容：", this.tempFiles)
 					this.uploadFileImpl();
 					console.log("调用成功")
 				}
 
-				// 
 			},
 
 			// 获取收件码的信息
 			getPickupCodeInfo(code) {
-				uni.request({
-					url: 'http://192.168.123.105:9999/file/download',
-					method: 'GET',
-					data: {
-						"pickupCode": code
-					},
-					success: res => {
-						console.log("通过pickupcode从服务端获取的数据", res);
+				var imcode = code
+				this.$u.get('file/download/', {
+					"pickupCode": imcode
+				}).then(res => {
+					console.log("通过pickupcode从服务端获取的数据", res);
+					if (res.code == 200) {
+						uni.showToast({
+							title: '有效的收件码'
+						});
+						this.downloadFileList = res.data;
+						this.showDownloadModal = true;
+					} else {
+						uni.showToast({
+							icon: "none",
+							title: res.desc
+						});
+					}
+				}).catch(err => {
+					console.log(err)
+				})
 
-						if (res.data.code == 200) {
-							uni.showToast({
-								title: '有效的收件码'
-							});
-							this.downloadFileList = res.data.data;
-							this.showDownloadModal = true;
-						} else {
-							uni.showToast({
-								icon: "none",
-								title: '该收件码已失效'
-							});
-						}
-					},
-					fail: () => {},
-					complete: () => {}
-				});
 			},
 			// 点击获取文件方式
 			chooseButton(index) {
@@ -277,26 +301,18 @@
 						type: "file",
 						success: res => {
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
-							// console.log("res.tempFiles", res.tempFiles)
-							// console.log("this.tempFiles", this.tempFiles)
-							// console.log("选择了", res.tempFiles);
 						},
 						fail: err => {
 							console.log("错误了", err)
 						}
 					})
 				}
-
 				// 获取视频
 				if (index == 1) {
-					var that = this;
 					wx.chooseMessageFile({
 						type: "video",
 						success: res => {
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
-							// console.log("res.tempFiles", res.tempFiles)
-							// console.log("this.tempFiles", this.tempFiles)
-							// console.log("选择了", res.tempFiles);
 						},
 						fail: err => {
 							console.log("错误了", err)
@@ -310,9 +326,6 @@
 						type: "image",
 						success: res => {
 							this.tempFiles = this.tempFiles.concat(res.tempFiles);
-							// console.log("res.tempFiles", res.tempFiles)
-							// console.log("this.tempFiles", this.tempFiles)
-							// console.log("选择了", res.tempFiles);
 						},
 						fail: err => {
 							console.log("错误了", err)
@@ -328,15 +341,14 @@
 							this.tempFilePaths = res.tempFilePaths;
 							console.log("tempFilePaths", this.tempFilePaths)
 							wx.uploadFile({
-								url: 'http://192.168.123.105:9999/upload',
+								url: 'https://tf.rjxh.cloud/upload',
 								filePath: this.tempFilePaths[0],
 								name: 'file',
 								formData: {
-									'username': 'eatmans'
+									'username': this.username
 								},
 								success: res => {
-									console.log("突突突突突突拖", this.tempFiles[0].path)
-									console.log(res.data.code)
+									console.log(res)
 									uni.showToast({
 										icon: "success",
 										title: '文件上传成功！'
@@ -348,7 +360,7 @@
 								fail: err => {
 									this.Toast({
 										icon: "none",
-										title: '上传失败'
+										title: '上传失败，请稍后重试！'
 									});
 									this.showAdd = false;
 									console.log("图片上传失败", err)
@@ -357,45 +369,59 @@
 						}
 					})
 				}
-				// console.log(`点击了第${index + 1}项，内容为：${this.list[index].text}`)
 			},
 
 			// 单文件上传
 			uploadFileImpl() {
+				var that = this;
 				console.log("this.tempFiles[0]", this.tempFiles[0])
-				wx.uploadFile({
-					url: 'http://192.168.123.105:9999/upload',
+				const uploadTask = wx.uploadFile({
+					// url: 'http://192.168.123.105:9999/upload',
+					url: 'https://tf.rjxh.cloud/upload',
 					filePath: this.tempFiles[0].path,
 					name: 'file',
 					formData: {
-						'username': 'eatmans',
+						'username':"this.username",
 						"filename": this.tempFiles[0].name,
 						"fileType": this.tempFiles[0].type,
 						"fileSize": this.tempFiles[0].size,
 						"description": this.desc
 					},
-					success: res => {
+					success(res) {
 						// 获取服务器发来的内容
-						var result = JSON.parse(res.data);
-						console.log("获得的数据", result.data)
-						this.pickupCode = result.data;
+						// var result = JSON.parse(res.data);
+						console.log(res.data)
+						// console.log("获得的数据", result.data)
+						// this.pickupCode = result.data;
 						uni.showToast({
 							icon: "success",
 							title: '上传成功！'
 						});
-						this.showAdd = false;
-						this.sendOK = true;
-						this.tempFiles = [];
+						that.showAdd = false;
+						that.sendOK = true;
+						that.tempFiles = [];
 					},
 					fail: err => {
-						this.Toast({
+						that.Toast({
 							icon: "none",
 							title: '上传失败'
 						});
-						this.showAdd = false;
+						that.showAdd = false;
 						console.log("上传失败", err)
 					}
-				})
+				});
+
+				uploadTask.onProgressUpdate((res) => {
+					console.log('上传进度' + res.progress);
+					console.log('已经上传的数据长度' + res.totalBytesSent);
+					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+
+					// // 测试条件，取消上传任务。
+					// if (res.progress > 50) {
+					// 	uploadTask.abort();
+					// }
+				});
+
 			},
 			// 设置粘贴板数据
 			copyPickupCode() {
@@ -407,22 +433,49 @@
 				});
 			},
 			// 根据index来下载
-			downloadFile(index){
-				
-			},
-			
-			// 直接下载全部文件
-			downloadAllFile(){
+			downloadFile(index) {
+				console.log(index);
 				wx.downloadFile({
-				  url: 'http://192.168.123.105:9999/file/get', //仅为示例，并非真实的资源
-				  success (res) {
-				    // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-				    // if (res.statusCode === 200) {
-				    //   wx.playVoice({
-				    //     filePath: res.tempFilePath
-				    //   })
-				    // }
-				  }
+					url: 'https://transfer.rjxh.cloud/transfer/' + index.saveAddress,
+					success(res) {
+						console.log(res)
+						if (res.statusCode === 200) {
+							uni.showToast({
+								title: '文件下载中',
+								icon: 'success'
+							});
+							wx.shareFileMessage({
+								filePath: res.tempFilePath,
+								fileName: index.filename,
+								success() {},
+								fail: console.error,
+							})
+
+						}
+					}
+				})
+			},
+
+			// 直接下载全部文件
+			downloadAllFile(downloadFileList) {
+				wx.downloadFile({
+					url: 'https://transfer.rjxh.cloud/transfer/' + downloadFileList.saveAddress,
+					success(res) {
+						console.log(res)
+						if (res.statusCode === 200) {
+							uni.showToast({
+								title: '文件下载中',
+								icon: 'success'
+							});
+							wx.shareFileMessage({
+								filePath: res.tempFilePath,
+								fileName: downloadFileList.filename,
+								success() {},
+								fail: console.error,
+							})
+
+						}
+					}
 				})
 			},
 
@@ -430,17 +483,18 @@
 			getPickupCode() {
 				uni.getClipboardData({
 					success: function(res) {
+
 						console.log("粘贴板数据", res.data);
 					}
 				});
 			},
 			// 监控用户输入的接收码
 			change(e) {
-				console.log('内容改变，当前值为：' + e);
+				// console.log('内容改变，当前值为：' + e);
 			},
 			// 
 			finish(e) {
-				console.log('输入结束，当前值为：' + e);
+				// console.log('输入结束，当前值为：' + e);
 				if (e == 990215) {
 					uni.showToast({
 						icon: "none",
@@ -517,15 +571,6 @@
 
 	}
 
-	.c-grip-add {
-		width: 75rpx;
-		height: 15rpx;
-		margin-top: 20rpx;
-		background-color: #C0C0C0;
-		border-radius: 45rpx;
-		margin-left: 350rpx;
-	}
-
 	.c-plus {
 		margin-right: 10rpx;
 	}
@@ -534,7 +579,12 @@
 		font-size: 35rpx;
 	}
 
-	.c-upload-box {}
+	.c-upload-box {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
 
 	.c-upload-top {
 		display: flex;
@@ -547,6 +597,7 @@
 
 	.c-title {
 		font-size: 50rpx;
+		margin-right: 400rpx;
 	}
 
 	.c-upload-content {
@@ -595,7 +646,7 @@
 		background-color: #f0f0f0;
 		border-radius: 45rpx 45rpx 0 0;
 	}
-	
+
 	.c-download-bottom {
 		position: absolute;
 		bottom: 0rpx;
@@ -603,6 +654,16 @@
 		width: 100%;
 		background-color: #f0f0f0;
 		border-radius: 45rpx 45rpx 0 0;
+	}
+
+	.c-tips-area {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		margin: 20rpx;
+		color: #888888;
 	}
 
 	.c-upload-button {
@@ -624,8 +685,8 @@
 		color: #FFFFFF;
 		background-color: #888;
 	}
-	
-	.c-download-button{
+
+	.c-download-button {
 		margin-top: 50rpx;
 		width: 580rpx;
 		font-size: 30rpx;
@@ -749,6 +810,7 @@
 	}
 
 	.c-pickupcode-text {
+		font-size: 35rpx;
 		color: #888888;
 	}
 

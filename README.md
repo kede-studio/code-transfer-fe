@@ -1,10 +1,7 @@
 # 可得快传
 
 
-
 ![codetransfer-big](G:\0code\PmCodeni\CodeTransferFE\docs\image\codetransfer-big.png)
-
-参考某牛快传的布局
 
 利用微信的相关API的来实现
 

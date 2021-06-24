@@ -16,15 +16,21 @@
 			</u-form-item>
 			<view class="c-tool">
 				<a class="c-a" href="#" @click="gotoFindPassword()">忘记密码</a>
-				<a class="c-a" href="#" @click="register()">注册账号</a>
+				<a class="c-a" href="#" @tap="register()">注册账号</a>
 			</view>
 
 		</u-form>
-		<u-button class="c-container-button" type="primary" :ripple="true" @click="submit">登录</u-button>
+		<u-button class="c-container-button" type="primary" :ripple="true" @click="submit()">登录</u-button>
 	</view>
 </template>
 
 <script>
+	import {
+		mapState,
+		mapMutations,
+		mapActions,
+		mapGetters
+	} from 'vuex'
 	import axios from 'axios'
 	export default {
 		data() {
@@ -44,13 +50,13 @@
 							trigger: ['change', 'blur'],
 
 						},
-						{
-							validator: (rule, value, callback) => {
-								return this.$u.test.mobile(value);
-							},
-							message: '手机号码不正确',
-							trigger: ['change', 'blur'],
-						}
+						// {
+						// 	validator: (rule, value, callback) => {
+						// 		return this.$u.test.mobile(value);
+						// 	},
+						// 	message: '手机号码不正确',
+						// 	trigger: ['change', 'blur'],
+						// }
 					],
 					inputPassword: [
 						// 必填规则
@@ -65,7 +71,18 @@
 
 			}
 		},
+		computed: {
+			...mapState(['hasLogin']),
+			...mapGetters(["userInfoGet", "userToken"])
+		},
 		methods: {
+			...mapMutations(['login', "logout"]),
+			...mapActions(['getPhoneNumber']),
+			Toast(data, duration = 1000) {
+				uni.showToast(Object.assign({}, data, {
+					duration
+				}))
+			},
 			register() {
 				uni.navigateTo({
 					url: '../register/register'
@@ -73,24 +90,36 @@
 			},
 			gotoFindPassword() {
 				uni.navigateTo({
-					url: '../findPassword/findPassword',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
+					url: '../findPassword/findPassword'
 				});
 			},
 			submit() {
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
 						console.log('验证通过');
-						this.$u.post('login/phone', {
-							phoneNumber: this.form.phoneNumber,
+						this.$u.post('login/', {
+							phone: this.form.phoneNumber,
 							password: this.form.inputPassword
 						}).then(res => {
+							console.log(res)
 							if (res.code == 200) {
 								try {
-									uni.setStorageSync('isLogined', 'logined');
-									console.log("写入登录状态成功")
+									uni.setStorage({
+									    key: 'token',
+									    data: res.data.token,
+									    success: function () {
+									        console.log('token');
+									    }
+									});
+									uni.setStorage({
+									    key: 'userInfo',
+									    data: res.data.userInfo,
+									    success: function () {
+									        console.log('userInfo');
+									    }
+									});
+									this.login(res.data.token, res.data.userInfo);
+									
 								} catch (e) {
 									console.log("出错了")
 								}
@@ -111,7 +140,7 @@
 									icon: 'none'
 								});
 							}
-						});
+						}).catch(error => console.log(error));
 					} else {
 						console.log('验证失败');
 					}

@@ -8,6 +8,7 @@ const store = new Vuex.Store({
 		hasLogin: false,
 		isUniverifyLogin: false,
 		loginProvider: "",
+		token: "",
 		openid: null,
 		testvuex: false,
 		colorIndex: 0,
@@ -17,16 +18,22 @@ const store = new Vuex.Store({
 		leftWinActive: '/pages/component/view/view',
 		activeOpen: '',
 		menu: [],
-		univerifyErrorMsg: ''
+		univerifyErrorMsg: '',
+		userInfo:[]
 	},
 	mutations: {
-		login(state, provider) {
+		login(state, token, userInfo) {
 			state.hasLogin = true;
-			state.loginProvider = provider;
+			state.token = token;
+			state.userInfo = userInfo
 		},
 		logout(state) {
 			state.hasLogin = false
 			state.openid = null
+		},
+		setUserInfo(state, userInfo) {
+			state.hasLogin = true;
+			state.userInfo = userInfo
 		},
 		setOpenid(state, openid) {
 			state.openid = openid
@@ -66,6 +73,13 @@ const store = new Vuex.Store({
 	getters: {
 		currentColor(state) {
 			return state.colorList[state.colorIndex]
+		},
+			
+		userToken(state){
+			return state.token
+		},
+		userInfoGet(state){
+			return state.userInfo
 		}
 	},
 	actions: {

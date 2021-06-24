@@ -1,5 +1,6 @@
 <template>
 	<view class="c-box">
+		
 		<image class="c-icon" src="../../static/tabber/star.png" mode=""></image>
 		<text class="c-tips">需要成为 PRO 用户，才能使用此功能</text>
 		<button class="c-sign-in" @tap="upgradeToPro()">立即升级</button>
@@ -20,10 +21,7 @@
 		data() {
 			return {
 				show: false,
-				content: `
-						空山新雨后<br>
-						天气晚来秋
-					`
+				content: ""
 			}
 		},
 		methods: {

@@ -5,9 +5,8 @@
 			<view class="c-header" @tap="gotoAccount()">
 				<image class="c-image" src="../../static/logo.png" mode=""></image>
 			</view>
-			<text class="c-nickname">EATMANS</text>
+			<text class="c-nickname">{{username}}</text>
 		</view>
-
 
 		<!-- 模态窗 -->
 		<u-modal v-model="show" :title-style="{color: 'red'}" :mask-close-able="true">
@@ -31,10 +30,7 @@
 				<text class="c-item-text">寻求帮助</text>
 				<u-icon name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
-			<!-- 			<view class="c-list">
-				<text class="c-item-text">关于广告</text>
-				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
-			</view> -->
+		
 			<view class="c-list" @tap="gotoAboutUs()">
 				<text class="c-item-text">关于我们</text>
 				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
@@ -51,25 +47,48 @@
 			</view>
 		</view>
 
-		<!-- 		<view class="c-welcome">
+		<view class="c-welcome" v-if="!hasLogin" @tap="gotoLogin()">
 			<button class="c-sign-in">注册/登录</button>
-		</view> -->
+		</view>
+		<view class="c-welcome" v-if="hasLogin" @tap="logoutFun()">
+			<button class="c-sign-in">退出登录</button>
+		</view>
 	</view>
 </template>
 
 <script>
+	import {
+		mapState,
+		mapMutations,
+		mapActions,
+		mapGetters
+	} from 'vuex'
 	export default {
 		data() {
 			return {
 				show: false,
-				content: `
-						空山新雨后<br>
-						天气晚来秋
-					`
-
+				username: ""
 			}
 		},
+		onLoad() {},
+		onShow() {
+			this.username = "可得快传";
+		},
+		computed: {
+			...mapState(['hasLogin']),
+			...mapGetters(["userInfoGet", "userToken"])
+		},
 		methods: {
+			...mapMutations(['login', "logout"]),
+			Toast(data, duration = 1000) {
+				uni.showToast(Object.assign({}, data, {
+					duration
+				}))
+			},
+			logoutFun(){
+				this.logout()
+			},
+
 			gotoAccount() {
 				uni.navigateTo({
 					url: '../account/account',
@@ -108,7 +127,15 @@
 					complete: () => {}
 				});
 			},
-			
+			gotoLogin() {
+				uni.navigateTo({
+					url: '../login/login',
+					success: res => {},
+					fail: () => {},
+					complete: () => {}
+				});
+			},
+
 			// 升级到专业版
 			upgradeToPro() {
 				this.show = true;
@@ -221,8 +248,8 @@
 		width: 200rpx;
 		height: 200rpx;
 	}
-	
-	.c-gray{
+
+	.c-gray {
 		color: gray;
 	}
 </style>

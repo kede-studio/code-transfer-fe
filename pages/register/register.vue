@@ -3,6 +3,11 @@
 		<image class="logo" src="../../static/logo.png"></image>
 		<u-toast ref="uToast" />
 		<u-form :model="form" ref="uForm" class="c-container">
+
+			<u-form-item prop="username">
+				<u-input v-model.trim="form.username" placeholder="用户名" />
+			</u-form-item>
+
 			<u-form-item prop="phoneNumber">
 				<u-input v-model.trim="form.phoneNumber" placeholder="手机号码" />
 			</u-form-item>
@@ -32,11 +37,17 @@
 </template>
 
 <script>
+	import {
+		mapState,
+		mapMutations,
+		mapActions,
+		mapGetters
+	} from 'vuex'
 	export default {
 		data() {
 			return {
 				form: {
-					uid: "",
+					username: "",
 					phoneNumber: '',
 					inputPassword: '',
 					confirmPassword: '',
@@ -110,7 +121,18 @@
 				}
 			};
 		},
+		computed: {
+			...mapState(['hasLogin', 'isUniverifyLogin', 'univerifyErrorMsg']),
+			...mapGetters(["userInfoGet", "userToken"])
+		},
 		methods: {
+			...mapMutations(['login', "logout"]),
+			...mapActions(['getPhoneNumber']),
+			Toast(data, duration = 1000) {
+				uni.showToast(Object.assign({}, data, {
+					duration
+				}))
+			},
 			gotoLogin() {
 				uni.navigateTo({
 					url: '../login/login',
@@ -134,30 +156,40 @@
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
 						console.log('验证通过');
-						this.$u.post('register/phone', {
-							uid: this.form.uid * 1,
-							phoneNumber: this.form.phoneNumber,
+						this.$u.post("register/", {
+							username: this.username,
+							phone: this.form.phoneNumber,
 							password: this.form.confirmPassword
 						}).then(res => {
 							if (res.code == 200) {
 								uni.setStorage({
-									key: "isLogined",
-									data: true,
-									success: function() {
-										console.log('写入是否已经登录！');
-									}
+								    key: 'token',
+								    data: res.data.token,
+								    success: function () {
+								        console.log('token');
+								    }
+								});
+								uni.setStorage({
+								    key: 'userInfo',
+								    data: res.data.userInfo,
+								    success: function () {
+								        console.log('userInfo');
+								    }
+								});
+								this.login(res.data.token, res.data.userInfo);
+								uni.showToast({
+									title: '登录成功，跳转中~'
 								});
 								uni.switchTab({
-									url: "../login/login",
+									url: "../my/my",
 								});
 							} else if (res.code == -2) {
 								this.error(res.desc);
 							} else {
 								this.error(res.desc);
 							}
-							console.log(res);
-						});
 
+						})
 					} else {
 						console.log('验证失败');
 

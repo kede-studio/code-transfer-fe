@@ -130,7 +130,7 @@
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
 						console.log('验证通过');
-						this.$u.post('register/phone', {
+						this.$u.post('register', {
 							uid: this.form.uid * 1,
 							phoneNumber: this.form.phoneNumber,
 							password: this.form.confirmPassword
