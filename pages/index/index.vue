@@ -33,6 +33,7 @@
 					<view class="c-nocontent" v-if="tempFiles.length == 0">
 						<image class="c-nofile" src="../../static/nofile.png"></image>
 						<text class="c-nocontent-desc">什么都没有</text>
+						<text class="c-upload-tips">注意：个人版不支持多文件上传</text>
 					</view>
 				</view>
 
@@ -334,40 +335,42 @@
 				}
 				// 从相册或相机中选
 				if (index == 3) {
-					wx.chooseImage({
-						success: res => {
-							console.log(res)
-							this.tempFiles = this.tempFiles.concat(res.tempFiles);
-							this.tempFilePaths = res.tempFilePaths;
-							console.log("tempFilePaths", this.tempFilePaths)
-							wx.uploadFile({
-								url: 'https://tf.rjxh.cloud/upload',
-								filePath: this.tempFilePaths[0],
-								name: 'file',
-								formData: {
-									'username': this.username
-								},
-								success: res => {
-									console.log(res)
-									uni.showToast({
-										icon: "success",
-										title: '文件上传成功！'
-									});
-									this.showAdd = false;
-									this.sendOK = true;
-									this.tempFiles = [];
-								},
-								fail: err => {
-									this.Toast({
-										icon: "none",
-										title: '上传失败，请稍后重试！'
-									});
-									this.showAdd = false;
-									console.log("图片上传失败", err)
-								}
-							})
-						}
-					})
+					this.$u.toast('暂不支持');
+
+					// 	wx.chooseImage({
+					// 		success: res => {
+					// 			console.log(res)
+					// 			this.tempFiles = this.tempFiles.concat(res.tempFiles);
+					// 			this.tempFilePaths = res.tempFilePaths;
+					// 			console.log("tempFilePaths", this.tempFilePaths)
+					// 			wx.uploadFile({
+					// 				url: 'https://tf.rjxh.cloud/upload',
+					// 				filePath: this.tempFilePaths[0],
+					// 				name: 'file',
+					// 				formData: {
+					// 					'username': this.username
+					// 				},
+					// 				success: res => {
+					// 					console.log(res)
+					// 					uni.showToast({
+					// 						icon: "success",
+					// 						title: '文件上传成功！'
+					// 					});
+					// 					this.showAdd = false;
+					// 					this.sendOK = true;
+					// 					this.tempFiles = [];
+					// 				},
+					// 				fail: err => {
+					// 					this.Toast({
+					// 						icon: "none",
+					// 						title: '上传失败，请稍后重试！'
+					// 					});
+					// 					this.showAdd = false;
+					// 					console.log("图片上传失败", err)
+					// 				}
+					// 			})
+					// 		}
+					// 	})
 				}
 			},
 
@@ -381,7 +384,7 @@
 					filePath: this.tempFiles[0].path,
 					name: 'file',
 					formData: {
-						'username':"this.username",
+						'username': this.username,
 						"filename": this.tempFiles[0].name,
 						"fileType": this.tempFiles[0].type,
 						"fileSize": this.tempFiles[0].size,
@@ -389,10 +392,10 @@
 					},
 					success(res) {
 						// 获取服务器发来的内容
-						// var result = JSON.parse(res.data);
-						console.log(res.data)
-						// console.log("获得的数据", result.data)
-						// this.pickupCode = result.data;
+						var result = JSON.parse(res.data);
+						console.log(result)
+						console.log("获得的数据", result.data)
+						that.pickupCode = result.data;
 						uni.showToast({
 							icon: "success",
 							title: '上传成功！'
@@ -412,7 +415,13 @@
 				});
 
 				uploadTask.onProgressUpdate((res) => {
+					uni.showLoading({
+						title: '上传中'
+					});
 					console.log('上传进度' + res.progress);
+					if (res.progress == 100) {
+						uni.hideLoading();
+					}
 					console.log('已经上传的数据长度' + res.totalBytesSent);
 					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
 
@@ -458,7 +467,7 @@
 
 			// 直接下载全部文件
 			downloadAllFile(downloadFileList) {
-				wx.downloadFile({
+				const downloadTask = wx.downloadFile({
 					url: 'https://transfer.rjxh.cloud/transfer/' + downloadFileList.saveAddress,
 					success(res) {
 						console.log(res)
@@ -476,7 +485,17 @@
 
 						}
 					}
+				});
+				downloadTask.onProgressUpdate((res) => {
+					uni.showLoading({
+						title: '下载中'
+					});
+					if (res.progress == 100) {
+						uni.hideLoading();
+					}
 				})
+				
+				
 			},
 
 			// 获取粘贴数据
@@ -685,7 +704,9 @@
 		color: #FFFFFF;
 		background-color: #888;
 	}
-
+.c-upload-tips{
+	color: #555555;
+}
 	.c-download-button {
 		margin-top: 50rpx;
 		width: 580rpx;
@@ -759,7 +780,7 @@
 
 	.c-nocontent-desc {
 		font-size: 25rpx;
-		color: #C8C7CC;
+		color: #888888;
 
 	}
 

@@ -35,6 +35,11 @@
 				<text class="c-item-text">关于我们</text>
 				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
+			
+<!-- 			<view class="c-list" @tap="gotoTest()">
+				<text class="c-item-text">测试中心</text>
+				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
+			</view> -->
 		</view>
 
 		<view class="c-upgrade-pro" @tap="upgradeToPro()">
@@ -130,6 +135,15 @@
 			gotoLogin() {
 				uni.navigateTo({
 					url: '../login/login',
+					success: res => {},
+					fail: () => {},
+					complete: () => {}
+				});
+			},
+			
+			gotoTest(){
+				uni.navigateTo({
+					url: '../test/test',
 					success: res => {},
 					fail: () => {},
 					complete: () => {}

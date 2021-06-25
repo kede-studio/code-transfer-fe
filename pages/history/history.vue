@@ -151,7 +151,7 @@
 			},
 
 			downloadFile() {
-				wx.downloadFile({
+				const downloadTask = wx.downloadFile({
 					url: 'https://transfer.rjxh.cloud/transfer/' + this.needToDownload.saveAddress,
 					success: res => {
 						console.log(res)
@@ -169,7 +169,18 @@
 
 						}
 					}
+				});
+
+				downloadTask.onProgressUpdate((res) => {
+					uni.showLoading({
+						title: '下载中'
+					});
+					if (res.progress == 100) {
+						uni.hideLoading();
+					}
+
 				})
+
 			},
 
 
