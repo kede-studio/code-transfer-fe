@@ -21,6 +21,7 @@
 
 		</u-form>
 		<u-button class="c-container-button" type="primary" :ripple="true" @click="submit()">登录</u-button>
+		<u-button class="c-container-button" type="primary" :ripple="true" @click="wxLogin()">微信登录</u-button>
 	</view>
 </template>
 
@@ -93,6 +94,34 @@
 					url: '../findPassword/findPassword'
 				});
 			},
+			wxLogin() {
+
+				uni.navigateTo({
+					url: '../loginByWX/loginByWX',
+					success: res => {},
+					fail: () => {},
+					complete: () => {}
+				});
+				// wx.login({
+				//   success (res) {
+				// 	  console.log(res)
+				//     if (res.code) {
+				//       //发起网络请求
+				//       wx.request({
+				//         url: 'http://localhost:9999/login/wx',
+				//         data: {
+				//           code: res.code
+				//         },
+				// 		success: (res) => {
+				// 			console.log(res)
+				// 		}
+				//       })
+				//     } else {
+				//       console.log('登录失败！' + res.errMsg)
+				//     }
+				//   }
+				// })
+			},
 			submit() {
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
@@ -105,21 +134,21 @@
 							if (res.code == 200) {
 								try {
 									uni.setStorage({
-									    key: 'token',
-									    data: res.data.token,
-									    success: function () {
-									        console.log('token');
-									    }
+										key: 'token',
+										data: res.data.token,
+										success: function() {
+											console.log('token');
+										}
 									});
 									uni.setStorage({
-									    key: 'userInfo',
-									    data: res.data.userInfo,
-									    success: function () {
-									        console.log('userInfo');
-									    }
+										key: 'userInfo',
+										data: res.data.userInfo,
+										success: function() {
+											console.log('userInfo');
+										}
 									});
 									this.login(res.data.token, res.data.userInfo);
-									
+
 								} catch (e) {
 									console.log("出错了")
 								}

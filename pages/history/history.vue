@@ -4,9 +4,9 @@
 		<view v-if="hasLogin === true">
 			<view class="c-list">
 				<view class="c-tiem" v-for="(item,index) in fileList" :key="index" @tap="showDownloadPopup(item)">
-					<view class="c-item-icon">
+					<!-- 					<view class="c-item-icon">
 						<u-icon name="file-text-fill" color="#3b3b3b" size="50"></u-icon>
-					</view>
+					</view> -->
 					<view class="c-item-miansu">
 						<view class="c-item-filename">
 							{{item.filename}}
@@ -151,15 +151,15 @@
 			},
 
 			downloadFile() {
+				uni.showLoading({
+					title: '文件下载中'
+				});
 				const downloadTask = wx.downloadFile({
 					url: 'https://transfer.rjxh.cloud/transfer/' + this.needToDownload.saveAddress,
 					success: res => {
 						console.log(res)
 						if (res.statusCode === 200) {
-							uni.showToast({
-								title: '文件下载中',
-								icon: 'success'
-							});
+
 							wx.shareFileMessage({
 								filePath: res.tempFilePath,
 								fileName: this.needToDownload.filename,
@@ -172,9 +172,6 @@
 				});
 
 				downloadTask.onProgressUpdate((res) => {
-					uni.showLoading({
-						title: '下载中'
-					});
 					if (res.progress == 100) {
 						uni.hideLoading();
 					}
@@ -193,7 +190,7 @@
 						uni.showToast({
 							title: '删除成功'
 						});
-						this.getFile();
+						this.init();
 					} else {
 						uni.showToast({
 							icon: "none",
@@ -202,7 +199,6 @@
 						console.log(res.desc);
 					}
 					this.showOperation = false
-
 					console.log(res);
 				});
 
@@ -243,8 +239,10 @@
 	.c-box {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
+		/* justify-content: center; */
 		align-items: center;
+		height: 100vh;
+		/* background-color: #F5F0F0; */
 	}
 
 	.c-area {
@@ -305,7 +303,7 @@
 	.c-tiem {
 		display: flex;
 		flex-direction: row;
-		background-color: #f5f5f5;
+		background-color: #F5F0F0;
 		justify-content: center;
 		align-items: center;
 		margin: 5rpx;

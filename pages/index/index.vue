@@ -296,8 +296,20 @@
 			},
 			// 点击获取文件方式
 			chooseButton(index) {
+
 				// 获取文件
 				if (index == 0) {
+					// #ifdef MP-QQ
+					qq.chooseMessageFile({
+						type: "file",
+						success: res => {
+							this.tempFiles = this.tempFiles.concat(res.tempFiles);
+						},
+						fail: err => {
+							console.log("错误了", err)
+						}
+					})
+					// #endif
 					wx.chooseMessageFile({
 						type: "file",
 						success: res => {
@@ -310,6 +322,17 @@
 				}
 				// 获取视频
 				if (index == 1) {
+					// #ifdef MP-QQ
+					qq.chooseMessageFile({
+						type: "video",
+						success: res => {
+							this.tempFiles = this.tempFiles.concat(res.tempFiles);
+						},
+						fail: err => {
+							console.log("错误了", err)
+						}
+					})
+					// #endif
 					wx.chooseMessageFile({
 						type: "video",
 						success: res => {
@@ -378,6 +401,9 @@
 			uploadFileImpl() {
 				var that = this;
 				console.log("this.tempFiles[0]", this.tempFiles[0])
+				uni.showLoading({
+					title: '上传中'
+				});
 				const uploadTask = wx.uploadFile({
 					// url: 'http://192.168.123.105:9999/upload',
 					url: 'https://tf.rjxh.cloud/upload',
@@ -396,10 +422,8 @@
 						console.log(result)
 						console.log("获得的数据", result.data)
 						that.pickupCode = result.data;
-						uni.showToast({
-							icon: "success",
-							title: '上传成功！'
-						});
+
+
 						that.showAdd = false;
 						that.sendOK = true;
 						that.tempFiles = [];
@@ -415,12 +439,13 @@
 				});
 
 				uploadTask.onProgressUpdate((res) => {
-					uni.showLoading({
-						title: '上传中'
-					});
 					console.log('上传进度' + res.progress);
 					if (res.progress == 100) {
 						uni.hideLoading();
+						uni.showToast({
+							icon: "success",
+							title: '上传成功！'
+						});
 					}
 					console.log('已经上传的数据长度' + res.totalBytesSent);
 					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
@@ -467,15 +492,15 @@
 
 			// 直接下载全部文件
 			downloadAllFile(downloadFileList) {
+				uni.showLoading({
+					title: '下载中'
+				});
 				const downloadTask = wx.downloadFile({
 					url: 'https://transfer.rjxh.cloud/transfer/' + downloadFileList.saveAddress,
 					success(res) {
 						console.log(res)
 						if (res.statusCode === 200) {
-							uni.showToast({
-								title: '文件下载中',
-								icon: 'success'
-							});
+
 							wx.shareFileMessage({
 								filePath: res.tempFilePath,
 								fileName: downloadFileList.filename,
@@ -487,15 +512,16 @@
 					}
 				});
 				downloadTask.onProgressUpdate((res) => {
-					uni.showLoading({
-						title: '下载中'
-					});
 					if (res.progress == 100) {
 						uni.hideLoading();
+						uni.showToast({
+							title: '文件下载成功',
+							icon: 'success'
+						});
 					}
 				})
-				
-				
+
+
 			},
 
 			// 获取粘贴数据
@@ -704,9 +730,11 @@
 		color: #FFFFFF;
 		background-color: #888;
 	}
-.c-upload-tips{
-	color: #555555;
-}
+
+	.c-upload-tips {
+		color: #555555;
+	}
+
 	.c-download-button {
 		margin-top: 50rpx;
 		width: 580rpx;

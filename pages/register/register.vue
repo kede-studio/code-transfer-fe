@@ -98,7 +98,7 @@
 							transform(value) {
 								return String(value);
 							},
-							message: '必须包含字母、数字和特殊符号'
+							message: '必须包含字母大小写、数字和特殊符号'
 						},
 						{
 							required: true,
@@ -157,7 +157,7 @@
 					if (valid) {
 						console.log('验证通过');
 						this.$u.post("register/", {
-							username: this.username,
+							username: this.form.username,
 							phone: this.form.phoneNumber,
 							password: this.form.confirmPassword
 						}).then(res => {
