@@ -19,7 +19,6 @@
 				</view>
 				<view class="c-upload-top">
 					<text class="c-title">添加文件</text>
-					<u-icon @tap="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon>
 				</view>
 
 				<view class="c-upload-content">
@@ -33,7 +32,9 @@
 					<view class="c-nocontent" v-if="tempFiles.length == 0">
 						<image class="c-nofile" src="../../static/nofile.png"></image>
 						<text class="c-nocontent-desc">什么都没有</text>
-						<text class="c-upload-tips">注意：个人版不支持多文件上传</text>
+					</view>
+					<view class="c-add-file-area">
+						<u-icon @tap="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon>
 					</view>
 				</view>
 
@@ -108,23 +109,22 @@
 				<view class="c-grip">
 				</view>
 				<view class="c-upload-top">
-					<text class="c-title">下载</text>
-					<!-- <u-icon @tap="show = true" name="plus-circle-fill" color="#cd0a0a" size="70"></u-icon> -->
+					<text class="c-title">下载或保存</text>
 				</view>
 
-				<!-- <view class="c-list-item" v-for="item in downloadFileList" :key="item.id"> -->
-				<view class="c-list-item">
+				<view class="c-list-item" v-for="item in downloadFileList" :key="item.id">
 					<u-icon class="c-list-item-filetype" name="file-text" color="#b4b4b4" size="50"></u-icon>
-					<text class="c-list-item-filename">{{downloadFileList.filename}}</text>
-					<text class="c-list-item-filesize">{{renderSize(downloadFileList.fileSize)}}</text>
-					<u-icon class="c-list-item-del" name="download" color="#cbcbcb" size="50"
-						@tap="downloadFile(downloadFileList)"></u-icon>
+					<text class="c-list-item-filename">{{item.filename}}</text>
+					<text class="c-list-item-filesize">{{renderSize(item.fileSize)}}</text>
+					<u-icon class="c-list-item-del" name="download" color="#cbcbcb" size="50" @tap="downloadFile(item)">
+					</u-icon>
 				</view>
 
 				<view class="c-download-bottom">
-					<button class="c-download-button" @tap="downloadAllFile(downloadFileList)">下载全部</button>
+					<button class="c-download-button"
+						@tap="downloadAllFile(downloadFileList[0].groupId, uid)">保存全部</button>
 					<view class="c-tips-area">
-						文件将通过转发到聊天框中保存
+						下载文件将通过转发到聊天框中进行下载，保存文件会保存到云盘中。
 					</view>
 				</view>
 			</view>
@@ -177,16 +177,13 @@
 				tempFiles: [], // 临时文件列表
 				tempFilePaths: [],
 				pickupCode: "000000",
-				userInfo: "",
-				username: "",
+				uid: 1,
 				shareUrl: "http://tf.rjxh.cloud/sh34ffs",
 				downloadFileList: [], //根据pickupcode获取到文件列表
-				logined: false
 			}
 		},
 		computed: {
-			...mapState(['hasLogin']),
-			...mapGetters(["userInfoGet", "userToken"])
+			...mapState(['hasLogin', "userInfo", "serverUrl", "openId"]),
 		},
 		onLoad() {
 			// this.init()
@@ -233,15 +230,68 @@
 			},
 
 			init() {
-				uni.getStorage({
-					key: 'userInfo',
+				let user = uni.getStorageSync("userInfo");
+				if (user != "") {
+					this.login(user);
+					this.uid = user.id;
+				}
+			},
+
+			uploadFileNew(fileTemp, index, groupId) {
+				const uploadTask = wx.uploadFile({
+					url: 'http://172.20.21.155:29999/upload',
+					// url: 'https://tf.rjxh.cloud/upload',
+					filePath: fileTemp[index].path,
+					name: 'file',
+					formData: {
+						'uid': this.uid,
+						"groupId": groupId,
+						"filename": fileTemp[index].name,
+						"fileType": fileTemp[index].type,
+						"fileSize": fileTemp[index].size,
+						"description": this.desc
+					},
 					success: res => {
-						this.userInfo = res.data;
-						this.logined = true;
-						this.username = res.data.username;
-						console.log(res.data);
+						// 获取服务器发来的内容
+						var result = JSON.parse(res.data);
+						console.log(result)
+						console.log("获得的数据", result.data)
+						this.pickupCode = result.data;
+						if (index + 1 == fileTemp.length) {
+							this.showAdd = false;
+							this.sendOK = true;
+							this.tempFiles = [];
+							uni.showToast({
+								title: '上传成功'
+							});
+						} else {
+							this.uploadFileNew(fileTemp, index + 1, groupId);
+						}
+					},
+
+					fail: err => {
+						this.showAdd = false;
+						this.Toast({
+							icon: "none",
+							title: '上传失败'
+						});
+						console.log("上传失败", err)
 					}
 				});
+
+				uploadTask.onProgressUpdate((res) => {
+					console.log('上传进度' + res.progress);
+					if (res.progress == 100) {
+						uni.hideLoading();
+						uni.showToast({
+							icon: "success",
+							title: '上传成功！'
+						});
+					}
+					console.log('已经上传的数据长度' + res.totalBytesSent);
+					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+				});
+
 			},
 
 			// 上传文件
@@ -257,19 +307,34 @@
 						icon: "none",
 						title: '还没有添加文件哦！'
 					});
-				} else if (!this.logined) {
+				} else if (!this.hasLogin) {
 					uni.showToast({
 						icon: "none",
 						title: '请先登录！'
 					});
 				} else {
-					console.log("文件列表内容：", this.tempFiles)
-					this.uploadFileImpl();
-					console.log("调用成功")
+					this.getGroupInfo(this.uid)
 				}
-
 			},
-
+			// 获取分组的信息
+			getGroupInfo(uid) {
+				wx.request({
+					url: this.serverUrl + 'group/?uid=' + uid,
+					method: 'POST',
+					success: res => {
+						console.log("获取分组的信息", res.data)
+						if (res.data.code == 200) {
+							this.uploadFileNew(this.tempFiles, 0, res.data.data.id);
+						} else {
+							uni.showToast({
+								title: '获取分组异常，请重试',
+								icon: "none",
+								duration: 3000
+							});
+						}
+					}
+				})
+			},
 			// 获取收件码的信息
 			getPickupCodeInfo(code) {
 				var imcode = code
@@ -292,11 +357,9 @@
 				}).catch(err => {
 					console.log(err)
 				})
-
 			},
 			// 点击获取文件方式
 			chooseButton(index) {
-
 				// 获取文件
 				if (index == 0) {
 					// #ifdef MP-QQ
@@ -359,41 +422,6 @@
 				// 从相册或相机中选
 				if (index == 3) {
 					this.$u.toast('暂不支持');
-
-					// 	wx.chooseImage({
-					// 		success: res => {
-					// 			console.log(res)
-					// 			this.tempFiles = this.tempFiles.concat(res.tempFiles);
-					// 			this.tempFilePaths = res.tempFilePaths;
-					// 			console.log("tempFilePaths", this.tempFilePaths)
-					// 			wx.uploadFile({
-					// 				url: 'https://tf.rjxh.cloud/upload',
-					// 				filePath: this.tempFilePaths[0],
-					// 				name: 'file',
-					// 				formData: {
-					// 					'username': this.username
-					// 				},
-					// 				success: res => {
-					// 					console.log(res)
-					// 					uni.showToast({
-					// 						icon: "success",
-					// 						title: '文件上传成功！'
-					// 					});
-					// 					this.showAdd = false;
-					// 					this.sendOK = true;
-					// 					this.tempFiles = [];
-					// 				},
-					// 				fail: err => {
-					// 					this.Toast({
-					// 						icon: "none",
-					// 						title: '上传失败，请稍后重试！'
-					// 					});
-					// 					this.showAdd = false;
-					// 					console.log("图片上传失败", err)
-					// 				}
-					// 			})
-					// 		}
-					// 	})
 				}
 			},
 
@@ -405,24 +433,23 @@
 					title: '上传中'
 				});
 				const uploadTask = wx.uploadFile({
-					// url: 'http://192.168.123.105:9999/upload',
-					url: 'https://tf.rjxh.cloud/upload',
+					url: 'http://172.20.21.155:29999/upload',
+					// url: 'https://tf.rjxh.cloud/upload',
 					filePath: this.tempFiles[0].path,
 					name: 'file',
 					formData: {
-						'username': this.username,
+						'uid': this.uid,
 						"filename": this.tempFiles[0].name,
 						"fileType": this.tempFiles[0].type,
 						"fileSize": this.tempFiles[0].size,
 						"description": this.desc
 					},
-					success(res) {
+					success: res => {
 						// 获取服务器发来的内容
 						var result = JSON.parse(res.data);
 						console.log(result)
 						console.log("获得的数据", result.data)
 						that.pickupCode = result.data;
-
 
 						that.showAdd = false;
 						that.sendOK = true;
@@ -449,11 +476,6 @@
 					}
 					console.log('已经上传的数据长度' + res.totalBytesSent);
 					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
-
-					// // 测试条件，取消上传任务。
-					// if (res.progress > 50) {
-					// 	uploadTask.abort();
-					// }
 				});
 
 			},
@@ -490,37 +512,35 @@
 				})
 			},
 
-			// 直接下载全部文件
-			downloadAllFile(downloadFileList) {
-				uni.showLoading({
-					title: '下载中'
-				});
-				const downloadTask = wx.downloadFile({
-					url: 'https://transfer.rjxh.cloud/transfer/' + downloadFileList.saveAddress,
-					success(res) {
-						console.log(res)
-						if (res.statusCode === 200) {
-
-							wx.shareFileMessage({
-								filePath: res.tempFilePath,
-								fileName: downloadFileList.filename,
-								success() {},
-								fail: console.error,
-							})
-
+			// 保存全部文件
+			downloadAllFile(gid, uid) {
+				if (this.hasLogin) {
+					wx.request({
+						url: this.serverUrl + 'file/save?uid=' + uid + "&gid=" + gid,
+						method: 'POST',
+						success: res => {
+							if (res.data.code == 200) {
+								uni.showToast({
+									title: '保存文件成功',
+									icon: "none",
+									duration: 3000
+								});
+							} else {
+								uni.showToast({
+									title: '保存文件失败，请重试',
+									icon: "none",
+									duration: 3000
+								});
+							}
 						}
-					}
-				});
-				downloadTask.onProgressUpdate((res) => {
-					if (res.progress == 100) {
-						uni.hideLoading();
-						uni.showToast({
-							title: '文件下载成功',
-							icon: 'success'
-						});
-					}
-				})
-
+					})
+				} else {
+					uni.showToast({
+						title: '该功能要登录才能使用',
+						icon: "none",
+						duration: 3000
+					});
+				}
 
 			},
 
@@ -528,7 +548,6 @@
 			getPickupCode() {
 				uni.getClipboardData({
 					success: function(res) {
-
 						console.log("粘贴板数据", res.data);
 					}
 				});
@@ -539,15 +558,7 @@
 			},
 			// 
 			finish(e) {
-				// console.log('输入结束，当前值为：' + e);
-				if (e == 990215) {
-					uni.showToast({
-						icon: "none",
-						title: '晓坚的生日哦'
-					});
-				} else {
-					this.getPickupCodeInfo(e);
-				}
+				this.getPickupCodeInfo(e);
 			}
 
 		}
@@ -578,6 +589,16 @@
 		margin-left: 25rpx;
 		font-size: 35rpx;
 		color: #FFFFFF;
+	}
+
+	.c-add-file-area {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 20rpx;
+		padding: 20rpx 40rpx;
+		border-radius: 20rpx;
+		background-color: #e8e8e8;
 	}
 
 	.c-act {
@@ -641,8 +662,11 @@
 	}
 
 	.c-title {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
 		font-size: 50rpx;
-		margin-right: 400rpx;
+		/* margin-right: 400rpx; */
 	}
 
 	.c-upload-content {

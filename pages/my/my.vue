@@ -8,14 +8,6 @@
 			<text class="c-nickname">{{username}}</text>
 		</view>
 
-		<!-- 模态窗 -->
-		<u-modal v-model="show" :title-style="{color: 'red'}" :mask-close-able="true">
-			<view class="c-slot-content">
-				<image class="c-mask-iamge" src="../../static/logo.png"></image>
-				<text>暂时不开放升级功能</text>
-			</view>
-		</u-modal>
-
 		<!-- 操作列表 -->
 		<view class="c-lists">
 			<view class="c-list" @tap="switchLanguage()">
@@ -30,33 +22,18 @@
 				<text class="c-item-text">寻求帮助</text>
 				<u-icon name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
-		
+
 			<view class="c-list" @tap="gotoAboutUs()">
 				<text class="c-item-text">关于我们</text>
 				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
-			
-<!-- 			<view class="c-list" @tap="gotoTest()">
-				<text class="c-item-text">测试中心</text>
-				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
-			</view> -->
 		</view>
 
-		<view class="c-upgrade-pro" @tap="upgradeToPro()">
-			<view class="c-left">
-				<u-icon class="c-icon" name="star-fill" size="50" color="#f7aa00"></u-icon>
-			</view>
-			<view class="c-righte">
-				<text>立即更新</text>
-				<text class="c-gray">发送更大的文件还有更多功能</text>
-			</view>
-		</view>
-
-		<view class="c-welcome" v-if="!hasLogin" @tap="gotoLogin()">
-			<button class="c-sign-in">注册/登录</button>
+		<view class="c-welcome" v-if="!hasLogin" @tap="userAuthorized()">
+			<button class="c-sign-in">授权登录</button>
 		</view>
 		<view class="c-welcome" v-if="hasLogin" @tap="logoutFun()">
-			<button class="c-sign-in">退出登录</button>
+			<button class="c-logut">退出登录</button>
 		</view>
 	</view>
 </template>
@@ -71,17 +48,19 @@
 	export default {
 		data() {
 			return {
-				show: false,
+				userProfile: null,
+				userStatus: "正常",
 				username: ""
 			}
 		},
-		onLoad() {},
+		onLoad() {
+			this.getUserInfo();
+		},
 		onShow() {
 			this.username = "可得快传";
 		},
 		computed: {
-			...mapState(['hasLogin']),
-			...mapGetters(["userInfoGet", "userToken"])
+			...mapState(['hasLogin', "userInfo", "serverUrl", "openId"]),
 		},
 		methods: {
 			...mapMutations(['login', "logout"]),
@@ -90,10 +69,81 @@
 					duration
 				}))
 			},
-			logoutFun(){
-				this.logout()
+			userAuthorized() {
+				wx.getUserProfile({
+					desc: '用于完善会员资料',
+					success: res => {
+						this.userProfile = res;
+						this.onGetUserInfo();
+					}
+				})
+
+			},
+			getUserInfo() {
+				let user = uni.getStorageSync("userInfo");
+				if (user != "") {
+					this.login(user)
+				}
+
 			},
 
+			onGetUserInfo() {
+				var that = this
+				wx.login({
+					success: login_res => {
+						wx.request({
+							url: this.serverUrl + 'user/login',
+							method: 'POST',
+							header: {
+								'content-type': 'application/json'
+							},
+							data: {
+								code: login_res.code, //临时登录凭证
+								rawData: that.userProfile.rawData, //用户非敏感信息
+								signature: that.userProfile.signature, //签名
+								encrypteData: that.userProfile.encryptedData, //用户敏感信息
+								iv: that.userProfile.iv //解密算法的向量
+							},
+							success: res => {
+								console.log("获取的user", res.data)
+								if (res.data.code == 200) {
+									// 7.小程序存储skey（自定义登录状态）到本地
+									that.userStatus = "正常"
+									this.login(res.data.data)
+									uni.showToast({
+										title: '登录成功'
+									});
+								} else if (res.data.code == 500) {
+									that.userStatus = '签名失败,请退出重新授权！';
+									uni.showToast({
+										title: '签名失败,请退出重新授权！',
+										icon: "none",
+										duration: 5000
+									});
+								} else {
+									uni.showToast({
+										title: '服务器异常',
+										icon: "none",
+										duration: 3000
+									});
+								}
+							},
+							fail: function(error) {
+								uni.showToast({
+									title: '网络错误',
+									icon: "none",
+									duration: 3000
+								});
+								console.log(error);
+							}
+
+						})
+					}
+				})
+			},
+			logoutFun() {
+				this.logout()
+			},
 			gotoAccount() {
 				uni.navigateTo({
 					url: '../account/account',
@@ -140,8 +190,8 @@
 					complete: () => {}
 				});
 			},
-			
-			gotoTest(){
+
+			gotoTest() {
 				uni.navigateTo({
 					url: '../test/test',
 					success: res => {},
@@ -149,11 +199,6 @@
 					complete: () => {}
 				});
 			},
-
-			// 升级到专业版
-			upgradeToPro() {
-				this.show = true;
-			}
 		}
 	}
 </script>
@@ -247,6 +292,16 @@
 		border-radius: 45rpx;
 		color: #FFFFFF;
 		background-color: #425e92;
+	}
+
+	.c-logut {
+		margin-top: 50rpx;
+		width: 580rpx;
+		font-size: 30rpx;
+		padding: 5rpx;
+		border-radius: 45rpx;
+		color: #FFFFFF;
+		background-color: #f7aa00;
 	}
 
 	.c-slot-content {

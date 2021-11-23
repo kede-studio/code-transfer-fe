@@ -8,13 +8,9 @@
 		</view>
 
 		<view class="c-area">
-			<view class="c-title">登录方式设置</view>
+			<view class="c-title">联系方式</view>
 			<view class="c-bind-title">电子邮箱</view>
 			<button class="c-button">绑定邮箱</button>
-			<u-gap height="2" bg-color="#ebebeb"></u-gap>
-
-			<view class="c-bind-title">微信账号</view>
-			<button class="c-button">绑定微信</button>
 			<u-gap height="2" bg-color="#ebebeb"></u-gap>
 
 			<view class="c-bind-title">手机号码</view>

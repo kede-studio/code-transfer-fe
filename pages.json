@@ -39,27 +39,6 @@
 		}
 
 	}, {
-		"path": "pages/login/login",
-		"style": {
-			"navigationBarTitleText": "登录",
-			"enablePullDownRefresh": false
-		}
-
-	}, {
-		"path": "pages/register/register",
-		"style": {
-			"navigationBarTitleText": "注册",
-			"enablePullDownRefresh": false
-		}
-
-	}, {
-		"path": "pages/findPassword/findPassword",
-		"style": {
-			"navigationBarTitleText": "找回密码",
-			"enablePullDownRefresh": false
-		}
-
-	}, {
 		"path": "pages/help/help",
 		"style": {
 			"navigationBarTitleText": "帮助",
@@ -94,13 +73,6 @@
 			"enablePullDownRefresh": false
 		}
 
-	}, {
-		"path": "pages/loginByWX/loginByWX",
-		"style": {
-			"navigationBarTitleText": "",
-			"enablePullDownRefresh": false
-		}
-
 	}],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -118,11 +90,6 @@
 			"iconPath": "static/tabber/index.png",
 			"selectedIconPath": "static/tabber/index-act.png",
 			"text": "首页"
-		}, {
-			"pagePath": "pages/history/history",
-			"iconPath": "static/tabber/history.png",
-			"selectedIconPath": "static/tabber/history-act.png",
-			"text": "历史"
 		}, {
 			"pagePath": "pages/storage/storage",
 			"iconPath": "static/tabber/storage.png",

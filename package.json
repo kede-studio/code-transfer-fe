@@ -1,0 +1,16 @@
+{
+  "name": "code-transfer-fe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "eatmans",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "uview-ui": "^1.8.4"
+  }
+}
