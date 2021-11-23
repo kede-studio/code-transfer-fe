@@ -23,6 +23,7 @@
 
 				<view class="c-upload-content">
 					<view class="c-list-item" v-for="item in tempFiles" :key="item.time">
+						<!-- <text class="c-list-item-progress">{{item.progress ? item.progress : "0" }}</text> -->
 						<u-icon class="c-list-item-filetype" name="file-text" color="#b4b4b4" size="50"></u-icon>
 						<text class="c-list-item-filename">{{item.name}}</text>
 						<text class="c-list-item-filesize">{{renderSize(item.size)}}</text>
@@ -172,7 +173,7 @@
 				showAdd: false, // 展示添加抽屉
 				showAccept: false, // 展示接收抽屉
 				sendOK: false,
-				checked: false, // 是否已经接受协议
+				checked: true, // 是否已经接受协议
 				showDownloadModal: false, // 下载页面的dowmloadModal
 				tempFiles: [], // 临时文件列表
 				tempFilePaths: [],
@@ -239,8 +240,8 @@
 
 			uploadFileNew(fileTemp, index, groupId) {
 				const uploadTask = wx.uploadFile({
-					url: 'http://172.20.21.155:29999/upload',
-					// url: 'https://tf.rjxh.cloud/upload',
+					// url: 'http://172.20.21.155:29999/upload',
+					url: 'https://tf.rjxh.cloud/upload',
 					filePath: fileTemp[index].path,
 					name: 'file',
 					formData: {
@@ -258,6 +259,7 @@
 						console.log("获得的数据", result.data)
 						this.pickupCode = result.data;
 						if (index + 1 == fileTemp.length) {
+							uni.hideLoading();
 							this.showAdd = false;
 							this.sendOK = true;
 							this.tempFiles = [];
@@ -281,15 +283,17 @@
 
 				uploadTask.onProgressUpdate((res) => {
 					console.log('上传进度' + res.progress);
-					if (res.progress == 100) {
-						uni.hideLoading();
-						uni.showToast({
-							icon: "success",
-							title: '上传成功！'
-						});
-					}
-					console.log('已经上传的数据长度' + res.totalBytesSent);
-					console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+					this.tempFiles[index].progress = res.progress;
+					console.log(this.tempFiles[index].progress)
+					// if (index + 1 == fileTemp.length) {
+					// 	uni.hideLoading();
+					// 	uni.showToast({
+					// 		icon: "success",
+					// 		title: '上传成功！'
+					// 	});
+					// }
+					// console.log('已经上传的数据长度' + res.totalBytesSent);
+					// console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
 				});
 
 			},
@@ -313,6 +317,9 @@
 						title: '请先登录！'
 					});
 				} else {
+					uni.showLoading({
+						title: '上传中'
+					});
 					this.getGroupInfo(this.uid)
 				}
 			},
@@ -433,8 +440,8 @@
 					title: '上传中'
 				});
 				const uploadTask = wx.uploadFile({
-					url: 'http://172.20.21.155:29999/upload',
-					// url: 'https://tf.rjxh.cloud/upload',
+					// url: 'http://172.20.21.155:9999/upload',
+					url: 'https://tf.rjxh.cloud/upload',
 					filePath: this.tempFiles[0].path,
 					name: 'file',
 					formData: {
@@ -601,6 +608,14 @@
 		background-color: #e8e8e8;
 	}
 
+	.c-list-item-progress {
+		background-color: #e5e5e5;
+		color: #2e2b2b;
+		padding: 10rpx;
+		margin: 5rpx;
+		border-radius: 10rpx;
+	}
+
 	.c-act {
 		color: #cd0a0a;
 		border-bottom: 5rpx solid #cd0a0a;
@@ -684,8 +699,7 @@
 	}
 
 	.c-list-item-filetype {
-		margin-left: 10rpx;
-		margin-right: 20rpx;
+		margin: 0 5rpx;
 	}
 
 	.c-list-item-filename {

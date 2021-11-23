@@ -1,7 +1,7 @@
 <template>
 	<view class="c-box">
 		<image class="c-icon" src="../../static/tabber/star.png" mode=""></image>
-		<text class="c-tips">这个世界能帮你的，只有你自己！</text>
+		<text class="c-tips">开发者努力编写中，目前只能靠你自己！</text>
 	</view>
 </template>
 
@@ -34,7 +34,7 @@
 	}
 	
 	.c-tips {
-		margin-top: 50rpx;
+		margin: 20rpx;
 		font-size: 40rpx;
 	}
 

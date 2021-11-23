@@ -3,9 +3,9 @@
 
 		<view class="c-top">
 			<view class="c-header" @tap="gotoAccount()">
-				<image class="c-image" src="../../static/logo.png" mode=""></image>
+				<image class="c-image" :src="tx" mode=""></image>
 			</view>
-			<text class="c-nickname">{{username}}</text>
+			<text class="c-nickname">{{userInfo.nickName ?userInfo.nickName : "未登录"}}</text>
 		</view>
 
 		<!-- 操作列表 -->
@@ -50,6 +50,7 @@
 			return {
 				userProfile: null,
 				userStatus: "正常",
+				tx: "../../static/logo.png",
 				username: ""
 			}
 		},
@@ -105,7 +106,6 @@
 								iv: that.userProfile.iv //解密算法的向量
 							},
 							success: res => {
-								console.log("获取的user", res.data)
 								if (res.data.code == 200) {
 									// 7.小程序存储skey（自定义登录状态）到本地
 									that.userStatus = "正常"
@@ -154,7 +154,7 @@
 			},
 			switchLanguage() {
 				uni.showToast({
-					title: '中文不香吗？',
+					title: '努力适配中！',
 					icon: 'none'
 				});
 			},
@@ -177,14 +177,6 @@
 			gotoAboutUs() {
 				uni.navigateTo({
 					url: '../aboutus/aboutus',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
-				});
-			},
-			gotoLogin() {
-				uni.navigateTo({
-					url: '../login/login',
 					success: res => {},
 					fail: () => {},
 					complete: () => {}

@@ -6,8 +6,8 @@ const store = new Vuex.Store({
 	state: {
 		hasLogin: false,
 		token: '',
-		serverUrl: 'http://172.20.21.155:9999/',
-		// serverUrl: 'http://rjxh.cloud:18881/',
+		// serverUrl: 'http://172.20.21.155:9999/',
+		serverUrl: 'https://tf.rjxh.cloud/',
 		userInfo: '',
 		openId: 'o4DGs5E8xOm-RlUF5iM5NW3LghNY',
 		likeTotal: 0,
