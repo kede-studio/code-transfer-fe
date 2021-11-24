@@ -1,7 +1,7 @@
 <template>
 	<view class="c-box">
 		<image class="c-icon" src="../../static/tabber/star.png" mode=""></image>
-		<text class="c-tips">暂时不接受任何反馈！</text>
+		<text class="c-tips">你可以添加Vx: eatmans 来反馈任何问题！</text>
 	</view>
 </template>
 
@@ -32,7 +32,7 @@
 	}
 	
 	.c-tips {
-		margin-top: 50rpx;
+		margin: 20rpx;
 		font-size: 40rpx;
 	}
 </style>

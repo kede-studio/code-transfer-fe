@@ -185,25 +185,47 @@
 			},
 
 			showPickupCode() {
-				uni.showModal({
-					title: '取件码',
-					content: this.needToDownload.pickupCode,
-					showCancel: false,
-					// cancelText: '关闭',
-					confirmText: '复制',
-					success: res => {
-						if (res.confirm) {
-							uni.setClipboardData({
-								data: this.needToDownload.pickupCode,
-								success: function() {
-									console.log('设置粘贴板数据成功');
-								}
-							});
-						}
-					},
-					fail: () => {},
-					complete: () => {}
+				uni.showToast({
+					title: '开发中'
 				});
+				
+				// this.$u.get('file/code', {
+				// 	id: this.needToDownload.id
+				// }).then(res => {
+				// 	if (res.code == 200) {
+				// 		uni.showToast({
+				// 			title: '删除成功'
+				// 		});
+				// 		this.init();
+				// 	} else {
+				// 		uni.showToast({
+				// 			icon: "none",
+				// 			title: res.desc
+				// 		});
+				// 		console.log(res.desc);
+				// 	}
+				// 	this.showOperation = false
+				// 	console.log(res);
+				// });
+				// uni.showModal({
+				// 	title: '取件码',
+				// 	content: this.needToDownload.pickupCode,
+				// 	showCancel: false,
+				// 	// cancelText: '关闭',
+				// 	confirmText: '复制',
+				// 	success: res => {
+				// 		if (res.confirm) {
+				// 			uni.setClipboardData({
+				// 				data: this.needToDownload.pickupCode,
+				// 				success: function() {
+				// 					console.log('设置粘贴板数据成功');
+				// 				}
+				// 			});
+				// 		}
+				// 	},
+				// 	fail: () => {},
+				// 	complete: () => {}
+				// });
 			},
 			userAuthorized() {
 				wx.getUserProfile({
