@@ -2,8 +2,11 @@
 	<view class="c-box">
 
 		<view class="c-top">
-			<view class="c-header" @tap="gotoAccount()">
-				<image class="c-image" :src="tx" mode=""></image>
+			<view class="c-header" v-if="userInfo == null">
+				<image class="c-image" :src="tx" mode="" ></image>
+			</view>
+			<view class="c-header2" v-if="userInfo != null">
+				<image class="c-image" :src="userInfo.avatarUrl" mode=""></image>
 			</view>
 			<text class="c-nickname">{{userInfo.nickName ?userInfo.nickName : "未登录"}}</text>
 		</view>
@@ -14,12 +17,16 @@
 				<text class="c-item-text">Language</text>
 				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
+			<view class="c-list" @tap="gotoUser()" v-if="userInfo.nickName == 'EATMANS'">
+				<text class="c-item-text">用户面板</text>
+				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
+			</view>
 			<view class="c-list" @tap="gotoFeelBack()">
 				<text class="c-item-text">意见反馈</text>
 				<u-icon class="c-item-icon" name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
 			<view class="c-list" @tap="gotoHelp()">
-				<text class="c-item-text">寻求帮助</text>
+				<text class="c-item-text">使用说明</text>
 				<u-icon name="arrow-right" color="#d3dbe2" size="28"></u-icon>
 			</view>
 
@@ -60,8 +67,15 @@
 		onShow() {
 			this.username = "可得快传";
 		},
+		onShareAppMessage() {
+			return {
+				title: '可得快传',
+				path: '/pages/index/index',
+				imageUrl: 'https://transfer.rjxh.cloud/transfer/pMqn7LitId1p37dcd02e6e5856125fbc1597fa38db9b.png'
+			}
+		},
 		computed: {
-			...mapState(['hasLogin', "userInfo", "serverUrl", "openId"]),
+			...mapState(['hasLogin', "userInfo", "serverUrl"]),
 		},
 		methods: {
 			...mapMutations(['login', "logout"]),
@@ -78,13 +92,16 @@
 						this.onGetUserInfo();
 					}
 				})
-
 			},
 			getUserInfo() {
 				let user = uni.getStorageSync("userInfo");
 				if (user != "") {
 					this.login(user)
-				}
+				};
+				wx.showShareMenu({
+				  withShareTicket: true,
+				  menus: ['shareAppMessage', 'shareTimeline']
+				})
 
 			},
 
@@ -147,9 +164,6 @@
 			gotoAccount() {
 				uni.navigateTo({
 					url: '../account/account',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
 				});
 			},
 			switchLanguage() {
@@ -161,34 +175,28 @@
 			gotoFeelBack() {
 				uni.navigateTo({
 					url: '../feelback/feelback',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
 				});
 			},
 			gotoHelp() {
 				uni.navigateTo({
 					url: '../help/help',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
 				});
 			},
 			gotoAboutUs() {
 				uni.navigateTo({
 					url: '../aboutus/aboutus',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
+				});
+			},
+			
+			gotoUser(){
+				uni.navigateTo({
+					url: '../user/user',
 				});
 			},
 
 			gotoTest() {
 				uni.navigateTo({
 					url: '../test/test',
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
 				});
 			},
 		}
@@ -220,12 +228,20 @@
 		padding: 40rpx;
 		border-radius: 50rpx;
 		background-color: #FFFFFF;
+	}
+	
+	.c-header2 {
+		width: 200rpx;
+		height: 200rpx;
+		border-radius: 50rpx;
+		background-color: #FFFFFF;
 
 	}
 
 	.c-image {
 		height: 100%;
 		width: 100%;
+		border-radius: 50rpx;
 	}
 
 	.c-nickname {

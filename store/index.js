@@ -9,7 +9,7 @@ const store = new Vuex.Store({
 		// serverUrl: 'http://172.20.21.155:9999/',
 		serverUrl: 'https://tf.rjxh.cloud/',
 		userInfo: '',
-		openId: 'o4DGs5E8xOm-RlUF5iM5NW3LghNY',
+		openId: '',
 		likeTotal: 0,
 		historyList: []
 	},

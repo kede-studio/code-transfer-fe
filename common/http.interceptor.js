@@ -4,7 +4,7 @@
 const install = (Vue, vm) => {
 	// 此为自定义配置参数，具体参数见上方说明
 	Vue.prototype.$u.http.setConfig({
-		// baseUrl: 'http://172.20.21.155:9999', // 请求的本域名
+		// baseUrl: 'http://172.20.21.155:9999', // 请求本地服务器
 		baseUrl: 'https://tf.rjxh.cloud', 
 		loadingText: '努力加载中~',
 		loadingTime: 800,

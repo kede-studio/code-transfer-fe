@@ -1,8 +1,7 @@
 <template>
 	<view class="c-box">
-		<image class="c-icon" src="../../static/codetransfer.png"></image>
-		<text class="c-tips">灵魂的思考从未脱离记忆的图像</text>
-		<text class="c-tips">队长：吴同学</text>
+		<image class="c-icon" src="../../static/tabber/star.png" mode=""></image>
+		<text class="c-tips">开发者努力编写中，目前只能靠你自己！</text>
 	</view>
 </template>
 
@@ -20,6 +19,7 @@
 </script>
 
 <style>
+	
 	.c-box {
 		display: flex;
 		flex-direction: column;
@@ -29,13 +29,13 @@
 	
 	.c-icon {
 		margin-top: 250rpx;
-		width: 400rpx;
-		height: 150rpx;
+		width: 125rpx;
+		height: 125rpx;
 	}
 	
 	.c-tips {
-		display: inline-block;
-		margin-top: 50rpx;
+		margin: 20rpx;
 		font-size: 40rpx;
 	}
+
 </style>
